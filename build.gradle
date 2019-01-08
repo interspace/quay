@@ -1,0 +1,57 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.kotlin_version = '1.3.11'
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+    }
+}
+
+ext.GROUP = 'com.github.interspace'
+ext.VERSION = '1.0.0'
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    ext {
+        andConf = [
+                minSdk     : 22,
+                sdk        : 28,
+                versionCode: 1,
+                versionName: VERSION,
+        ]
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext.vs = [
+        rx: [
+                java: '2.2.4',
+        ]
+]
+
+ext.deps = [
+        rx: [
+                java: "io.reactivex.rxjava2:rxjava:${vs.rx.java}",
+        ],
+
+        test: [
+                junit: 'junit:junit:4.12',
+                assertk: "com.willowtreeapps.assertk:assertk:0.9",
+                mockito: "com.nhaarman:mockito-kotlin:1.5.0",
+                espresso: 'androidx.test.espresso:espresso-core:3.1.0',
+                runner: "androidx.test:runner:1.1.0",
+        ],
+]
