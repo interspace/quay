@@ -1,0 +1,49 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'com.github.dcendents.android-maven'
+
+android {
+    compileSdkVersion andConf.sdk
+
+    defaultConfig {
+        applicationId "com.interspacehq.quay.app"
+        minSdkVersion andConf.minSdk
+        targetSdkVersion andConf.sdk
+        versionCode andConf.version
+        versionName andConf.versionName
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+dependencies {
+    implementation project(':lib')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation deps.rx.java
+
+    implementation deps.x.appcompat
+    implementation deps.x.constraint
+    implementation deps.x.ktx
+
+    testImplementation deps.test.junit
+    testImplementation deps.test.assertk
+    testImplementation deps.test.mockito
+    androidTestImplementation deps.test.runner
+    androidTestImplementation deps.test.espresso
+}
+
+

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Quay demo</string>
+    <string name="hint">Tap to focus and open keyboard</string>
+</resources>
