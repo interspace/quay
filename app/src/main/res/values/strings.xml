@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Quay demo</string>
     <string name="hint">Tap to focus and open keyboard</string>
+    <string name="force_keyboard">Force Keyboard</string>
+    <string name="switch_window_mode">Window Mode</string>
 </resources>

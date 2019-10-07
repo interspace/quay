@@ -38,6 +38,7 @@ class KeyboardSizeProvider private constructor(
     }.share()
 
     private val screenSize = Point()
+    private val realSize = Point()
     private val popupRect = Rect()
 
     private val heightEvents = PublishSubject.create<Int>()
@@ -60,32 +61,84 @@ class KeyboardSizeProvider private constructor(
     }
 
     private fun onGlobalLayout() {
-        activity.windowManager.defaultDisplay.getSize(screenSize)
         contentView.getWindowVisibleDisplayFrame(popupRect)
 
-        // NOTE: the topCutout, if there is any, seems to offset the screen "top" as
-        // used in the computation of getSize() above, so we need to take that into
-        // account when computing the *actual* screen height
-        val effectiveScreenHeight = screenSize.y + topCutoutHeight
+        val effectiveScreenHeight = computeEffectiveScreenHeight()
 
         val keyboardHeight = effectiveScreenHeight - popupRect.bottom
         heightEvents.onNext(keyboardHeight)
     }
 
-    private val topCutoutHeight by lazy(LazyThreadSafetyMode.NONE) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            // no cutouts
-            return@lazy 0
+    private fun computeEffectiveScreenHeight(): Int {
+        val screenHeight = computeScreenHeight()
+
+        // NOTE: the topCutout, if there is any, seems to offset the screen "top" as
+        // used in the computation of getSize() above, so we need to take that into
+        // account when computing the *actual* screen height
+        return screenHeight + topCutoutHeight
+    }
+
+    private fun computeScreenHeight(): Int {
+        // NOTE: Display.getSize is not reliable on all devices (I'm looking at you, Xiaomi).
+        activity.windowManager.defaultDisplay.getSize(screenSize)
+        val screenHeight = screenSize.y
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            // hope for the best; no obvious way to handle OEM bugs...
+            return screenHeight
         }
 
-        val decor = activity.window.peekDecorView() ?: return@lazy 0
-        val cutout = decor.rootWindowInsets.displayCutout ?: return@lazy 0
+        // Beware, terrible hacks lie below:
 
-        cutout.boundingRects.maxBy {
-            if (it.top == 0) it.height()
-            else 0
-        }?.height() ?: 0
+        activity.windowManager.defaultDisplay.getRealSize(realSize)
+        val navBarHeight = navBarHeight()
+
+        if (screenHeight + navBarHeight == realSize.y) {
+            // HACKS for MIUI: MIUI's getSize() method, for whatever reason, *always* returns
+            // `realSize - navBarHeight()`, regardless of whether the navBar is actually being
+            // shown or not. Since you can disable the navbar and use "fullscreen" gesture nav,
+            // this is obviously a problem. Luckily, we can detect its weirdness because getSize
+            // also never accounts for statusBar height, unlike sane OEMs.
+
+            val insets = activity.window.peekDecorView()?.rootWindowInsets
+                ?: return screenHeight // hopefully doesn't happen? not much we can do
+
+            return realSize.y - insets.systemWindowInsetBottom
+        }
+
+        // phew, normal case
+        return screenHeight
     }
+
+    private fun navBarHeight(): Int {
+        val resources = activity.resources
+        val hasNavBarId = resources.getIdentifier("config_showNavigationBar", "bool", "android")
+        if (hasNavBarId == 0 || !resources.getBoolean(hasNavBarId)) {
+            // no navBar
+            return 0
+        }
+
+        val heightId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        if (heightId == 0) return 0
+
+        return resources.getDimensionPixelSize(heightId)
+    }
+
+    private val topCutoutHeight: Int
+        get() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                // no cutouts
+                return 0
+            }
+
+            val decor = activity.window.peekDecorView() ?: return 0
+            val cutout = decor.rootWindowInsets?.displayCutout ?: return 0
+
+            return cutout.boundingRects.maxBy {
+                if (it.top == 0) it.height()
+                else 0
+            }?.height() ?: 0
+        }
 
     companion object {
         @Suppress("unused")
