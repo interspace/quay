@@ -96,22 +96,29 @@ class KeyboardSizeProvider private constructor(
             return screenHeight
         }
 
+        val insets = activity.window.peekDecorView()?.rootWindowInsets
+            ?: return screenHeight // hopefully doesn't happen? not much we can do
+
         // Beware, terrible hacks lie below:
 
         activity.windowManager.defaultDisplay.getRealSize(realSize)
         val navBarHeight = navBarHeight()
 
-        if (screenHeight + navBarHeight == realSize.y) {
+        if (screenHeight + navBarHeight == realSize.y && insets.stableInsetTop > 0) {
             // HACKS for MIUI: MIUI's getSize() method, for whatever reason, *always* returns
             // `realSize - navBarHeight()`, regardless of whether the navBar is actually being
             // shown or not. Since you can disable the navbar and use "fullscreen" gesture nav,
-            // this is obviously a problem. Luckily, we can detect its weirdness because getSize
-            // also never accounts for statusBar height, unlike sane OEMs.
+            // this is obviously a problem.
 
-            val insets = activity.window.peekDecorView()?.rootWindowInsets
-                ?: return screenHeight // hopefully doesn't happen? not much we can do
-
-            return realSize.y - insets.systemWindowInsetBottom
+            // NOTE 2: this branch actually can also get triggered on sane devices when
+            // using FULLSCREEN mode (to render below the status bar) but luckily it
+            // *seems* to work there as well. We *could* always use this branch, but I
+            // prefer to keep it conditional since it's less battle-tested. Using
+            // stableInset may also be hacks and only work if you have that flag set
+            // on the window; experimentally, the Pixel will include the keyboard size
+            // in systemWindowInsets in this case. Future work could explore taking
+            // adnvatage of this...?
+            return realSize.y - insets.stableInsetBottom
         }
 
         // phew, normal case

@@ -17,11 +17,18 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
 
     private val subs = CompositeDisposable()
-    private var fullscreen = false
+    private var fullscreen = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        window.decorView.apply {
+            systemUiVisibility =
+                systemUiVisibility or
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        }
 
         findViewById<View>(R.id.force_keyboard).setOnClickListener {
             val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
