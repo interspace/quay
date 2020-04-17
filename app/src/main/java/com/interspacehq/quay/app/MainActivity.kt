@@ -8,8 +8,10 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import com.interspacehq.quay.KeyboardSizeProvider
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.TimeUnit
 
 @SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
@@ -46,8 +48,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPostResume() {
-        super.onPostResume()
+    override fun onStart() {
+        super.onStart()
 
         findViewById<View>(android.R.id.content).post {
             subs.add(
@@ -58,6 +60,13 @@ class MainActivity : AppCompatActivity() {
                             height = keyboardHeight
                         }
                     }
+            )
+
+            // quick test to check disposing the subscription from a background thread
+            val heights = KeyboardSizeProvider.create(this).subscribe()
+            subs.add(
+                Observable.timer(100, TimeUnit.MILLISECONDS)
+                    .subscribe { heights.dispose() }
             )
         }
     }

@@ -7,14 +7,14 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.1'
+        classpath 'com.android.tools.build:gradle:3.6.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
 
 ext.GROUP = 'com.github.interspace'
-ext.VERSION = '1.1.1'
+ext.VERSION = '1.1.2'
 
 allprojects {
     repositories {
@@ -49,7 +49,7 @@ ext.deps = [
 
         x: [
                 appcompat: 'androidx.appcompat:appcompat:1.0.2',
-                constraint: 'androidx.constraintlayout:constraintlayout:2.0.0-beta1',
+                constraint: 'androidx.constraintlayout:constraintlayout:2.0.0-beta4',
                 ktx: 'androidx.core:core-ktx:1.0.1',
         ],
 

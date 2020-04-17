@@ -4,6 +4,7 @@ import android.app.Activity
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Build
+import android.os.Looper
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -32,7 +33,14 @@ class KeyboardSizeProvider private constructor(
 
             emitter.setCancellable {
                 disposable.dispose()
-                dismiss()
+
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    dismiss()
+                } else {
+                    activity.runOnUiThread {
+                        dismiss()
+                    }
+                }
             }
         }
     }.share()
