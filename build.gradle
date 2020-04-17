@@ -14,7 +14,7 @@ buildscript {
 }
 
 ext.GROUP = 'com.github.interspace'
-ext.VERSION = '1.1.2'
+ext.VERSION = '1.1.3'
 
 allprojects {
     repositories {
